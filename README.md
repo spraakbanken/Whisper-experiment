@@ -35,7 +35,7 @@ All models required for the transcription are automatically downloaded.
 To evaluate the transcription run (use appropriate values for GOLD_TRANSCRIPTION ,TRANSCRIPTION and OUTPUT):
 ```
 python compare.py GOLD_TRANSCRIPTION TRANSCRIPTION > OUTPUT.tsv
-``
+```
 
 The output is a table containig input filename, gold transcription, transcription, BLEU score, GLEU score and word error rate
 
