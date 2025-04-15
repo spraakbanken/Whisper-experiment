@@ -18,14 +18,6 @@ pip install torch==2.6.0+cpu torchvision==0.21.0+cpu torchaudio==2.6.0+cpu --ind
 pip install -r requirements-cpu.txt
 ```
 
-### 3. Download the KB-Whisper models
-
-```
-git lfs install
-git clone https://huggingface.co/KBLab/kb-whisper-small
-git clone https://huggingface.co/KBLab/kb-whisper-large
-```
-
 ## Running
 
 ### 1. Transcription
@@ -36,6 +28,7 @@ find DATA_PATH -name '*.wav' -exec python transcribe.py {} +
 ```
 
 This will transcribe all WAVE file using FasterWhisper and Stable-TS using the OpenAI Whisper and KB-Whisper models both in small and large version
+All models required for the transcription are automatically downloaded.
 
 ### 2. Evaluation
 
