@@ -38,3 +38,18 @@ python compare.py GOLD_TRANSCRIPTION TRANSCRIPTION > OUTPUT.tsv
 ``
 
 The output is a table containig input filename, gold transcription, transcription, BLEU score, GLEU score and word error rate
+
+
+## Common problems
+
+- 
+```
+Unable to load any of {libcudnn_ops.so.9.1.0, libcudnn_ops.so.9.1, libcudnn_ops.so.9, libcudnn_ops.so}
+Invalid handle. Cannot load symbol cudnnCreateTensorDescriptor
+```
+
+Use `LD_PRELOAD=./venv/lib/python3.12/site-packages/nvidia/cudnn/lib/libcudnn.so.9 python transcribe.py`
+
+- `ImportError: libctranslate2-bc15bf3f.so.4.5.0: cannot enable executable stack as shared object requires: Invalid argument`
+
+Run `patchelf --clear-execstack ./venv/lib/python3.12/site-packages/ctranslate2.libs/libctranslate2-bc15bf3f.so.4.5.0`
