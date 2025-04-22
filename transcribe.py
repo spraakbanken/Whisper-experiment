@@ -44,9 +44,11 @@ for audio_file in audio_files:
                 kwargs = {}
                 if language:
                     kwargs["language"] = language
-                    text_file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size, language]) + ".txt"
+                    file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size, language])
                 else:
-                    text_file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size]) + ".txt"
+                    file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size])
+                text_file_name = file_name + ".txt"
+                segments_file_name = file_name + ".segments"
                 if not Path(text_file_name).exists():
                     print(text_file_name)
                     if m == "stable_ts":
@@ -57,6 +59,26 @@ for audio_file in audio_files:
                         print("Detected Language: " + info.language)
                         text = ' '.join([segment.text for segment in segments])
                     with open(text_file_name, 'w') as f:
+                        f.write(text)
+                if not Path(segments_file_name).exists():
+                    print(segments_file_name)
+                    lines = []
+                    index = 1
+                    if m == "stable_ts":
+                        result = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
+                        for segment in result.segments:
+                            lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
+                            index+=1
+                    else:
+                        segments, info = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
+#                        print("Detected Language: " + info.language)
+                        for segment in segments:
+                            lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
+                            index+=1
+
+#                        text = ' '.join([segment.text for segment in segments])
+                    with open(segments_file_name, 'w') as f:
+                        text = "\n".join(lines)
                         f.write(text)
 # print("Detected language '%s' with probability %f" % (info.language, info.language_probability))
 
