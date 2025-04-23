@@ -3,6 +3,7 @@ import os
 from faster_whisper import WhisperModel
 import stable_whisper
 from pathlib import Path
+import time
 
 languages = ['sv', '']
 condition_on_previous = True
@@ -52,10 +53,16 @@ for audio_file in audio_files:
                 if not Path(text_file_name).exists():
                     print(text_file_name)
                     if m == "stable_ts":
+                        start = time.process_time()
                         result = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
+                        end = time.process_time()
+                        print("Took " +str(end-start) + " s to transcribe " + text_file_name)
                         text = result.text
                     else:
+                        start = time.process_time()
                         segments, info = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
+                        end = time.process_time()
+                        print("Took " +str(end-start) + " s to transcribe " + text_file_name)
                         print("Detected Language: " + info.language)
                         text = ' '.join([segment.text for segment in segments])
                     with open(text_file_name, 'w') as f:
@@ -65,13 +72,18 @@ for audio_file in audio_files:
                     lines = []
                     index = 1
                     if m == "stable_ts":
+                        start = time.process_time()
                         result = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
+                        end = time.process_time()
+                        print("Took " +str(end-start) + " s to transcribe " + segments_file_name)
                         for segment in result.segments:
                             lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
                             index+=1
                     else:
+                        start = time.process_time()
                         segments, info = models[m][model_size].transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
-#                        print("Detected Language: " + info.language)
+                        end = time.process_time()
+                        print("Took " +str(end-start) + " s to transcribe " + segments_file_name)
                         for segment in segments:
                             lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
                             index+=1
