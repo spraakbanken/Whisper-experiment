@@ -31,8 +31,8 @@ python-dateutil==2.9.0.post0
 pytz==2025.2
 PyYAML==6.0.2
 regex==2024.11.6
+setuptools==78.1.1
 requests==2.32.4
-setuptools==70.2.0
 six==1.17.0
 stable-ts==2.19.0
 sympy==1.13.1
