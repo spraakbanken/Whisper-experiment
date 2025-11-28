@@ -78,6 +78,7 @@ for audio_file in audio_files:
                 start = time.process_time()
                 segments, info = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
                 end = time.process_time()
+                segments = list(segments)
                 if not language:
                     logger.info("Detected Language: " + info.language)
                     final_language = "auto:" + info.language
