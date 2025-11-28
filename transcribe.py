@@ -4,6 +4,7 @@ from faster_whisper import WhisperModel
 import stable_whisper
 from pathlib import Path
 import time
+import csv
 
 import logging
 
@@ -84,8 +85,9 @@ for audio_file in audio_files:
                     final_language = "auto:" + info.language
                 text = ' '.join([segment.text for segment in segments])
             logger.info("Took %ds to transcribe", end-start)
-            all_results.append({'audio_file': audio_file, 'temperature': temperature, 'language': language, 'start': start, 'end': end, 'duration': end-start, 'text': text, 'segments': segments})
+            all_results.append({'audio_file': Path(audio_file).stem, 'temperature': temperature, 'language': final_language, 'start': round(start,2), 'end': round(end,2), 'duration': round(end-start,2), 'text': text, 'segments': [{'start': round(float(s.start),2), 'end': round(float(s.end),2), 'text': s.text} for s in segments]})
 
 with open('results_' + model_name + '_' + model_size +'.csv', 'w', newline='') as f:
     writer = csv.writer(f)
-    writer.writerows(all_results)
+    writer.writerow(all_results[0].keys())
+    writer.writerows([r.values() for r in all_results])
