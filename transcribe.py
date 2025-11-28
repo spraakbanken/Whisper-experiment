@@ -64,13 +64,14 @@ for audio_file in audio_files:
             kwargs = {"temperature": temperature}
             if language:
                 kwargs["language"] = language
+                final_language = language
             if model_name == "stable_ts":
                 start = time.process_time()
                 result = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
                 end = time.process_time()
                 if not language:
                     logger.info("Detected Language: " + result.language)
-                    language = "auto:" + result.language
+                    final_language = "auto:" + result.language
                 text = result.text
                 segments = result.segments
             else:
@@ -79,7 +80,7 @@ for audio_file in audio_files:
                 end = time.process_time()
                 if not language:
                     logger.info("Detected Language: " + info.language)
-                    language = "auto:" + info.language
+                    final_language = "auto:" + info.language
                 text = ' '.join([segment.text for segment in segments])
             logger.info("Took %ds to transcribe", end-start)
             all_results.append({'audio_file': audio_file, 'temperature': temperature, 'language': language, 'start': start, 'end': end, 'duration': end-start, 'text': text, 'segments': segments})
