@@ -47,6 +47,7 @@ else:
 
 audio_files = sys.argv[4:]
 
+all_results = []
 for audio_file in audio_files:
     logger.info("Transcribing %s", audio_file)
     for language in languages:
@@ -54,47 +55,26 @@ for audio_file in audio_files:
             kwargs = {"temperature": temperature}
             if language:
                 kwargs["language"] = language
-                file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size, language, str(temperature)])
+            if model_name == "stable_ts":
+                start = time.process_time()
+                result = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
+                end = time.process_time()
+                if not language:
+                    logger.info("Detected Language: " + result.language)
+                    language = "auto:" + result.language
+                text = result.text
+                segments = result.segments
             else:
-                file_name = "_".join([os.path.splitext(audio_file)[0], "whisper", m, model_size, "auto", str(temperature)])
-            text_file_name = file_name + ".txt"
-            segments_file_name = file_name + ".segments"
-            if not Path(text_file_name).exists():
-                if model_name == "stable_ts":
-                    start = time.process_time()
-                    result = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
-                    end = time.process_time()
-                    text = result.text
-                else:
-                    start = time.process_time()
-                    segments, info = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
-                    end = time.process_time()
-                    if not language:
-                        logger.info("Detected Language: " + info.language)
-                    text = ' '.join([segment.text for segment in segments])
-                logger.info("Took %ds to transcribe", end-start)
-                logger.info("Writing transcription %s", text_file_name)
-                with open(text_file_name, 'w') as f:
-                    f.write(text)
-                if not Path(segments_file_name).exists():
-                    lines = []
-                    index = 1
-                    if model_name == "stable_ts":
-                        start = time.process_time()
-                        result = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, **kwargs)
-                        end = time.process_time()
-                        for segment in result.segments:
-                            lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
-                            index+=1
-                    else:
-                        start = time.process_time()
-                        segments, info = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
-                        end = time.process_time()
-                        for segment in segments:
-                            lines.append("\t".join([str(index),str(segment.start),str(segment.end),segment.text]))
-                            index+=1
-                    logger.info("Took %ds to transcribe", end-start)
-                    logger.info("Writing segments %s", segments_file_name)
-                    with open(segments_file_name, 'w') as f:
-                        text = "\n".join(lines)
-                        f.write(text)
+                start = time.process_time()
+                segments, info = model.transcribe(audio_file, condition_on_previous_text=condition_on_previous, log_progress=True, **kwargs)
+                end = time.process_time()
+                if not language:
+                    logger.info("Detected Language: " + info.language)
+                    language = "auto:" + info.language
+                text = ' '.join([segment.text for segment in segments])
+            logger.info("Took %ds to transcribe", end-start)
+            all_results.append({'audio_file': audio_file, 'temperature': temperature, 'language': language, 'start': start, 'end': end, 'duration': end-start, 'text': text, 'segments': segments})
+
+with open('results_' + model_name + '_' + model_size +'.csv', 'w', newline='') as f:
+    writer = csv.writer(f)
+    writer.writerows(all_results)
