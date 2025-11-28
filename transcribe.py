@@ -5,16 +5,24 @@ import stable_whisper
 from pathlib import Path
 import time
 
+import logging
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
+
 # Fixed parameters
 condition_on_previous = True
 languages = ['sv', '']
 temperatures = [0,0.25,0.5,0.75,1]
 
+if len(sys.argv) < 5:
+    logger.error("Missing command line parameters, expected at least 4, got %d: %s", len(sys.argv)-1, sys.argv[1:])
+    sys.exit(-1)
 # Command-line parameters
 model_name = sys.argv[1]
 model_size = sys.argv[2]
 device = sys.argv[3]
-logger.info("Parameters model name: %s, model size: %s, device: ", model_name, model_size, device)
+logger.info("Parameters model name: %s, model size: %s, device: %s", model_name, model_size, device)
 
 model_parameters = {
         "device" : device,
@@ -41,8 +49,8 @@ elif model_name == "kb_whisper"
         **model_parameters
     )
 else:
-    logger.error("Unknown model name %s", model_name)
-    system.exit(-1)
+    logger.error("Unknown model name %s, use one of: stable_ts, openai, kb-whisper", model_name)
+    sys.exit(-1)
 
 
 audio_files = sys.argv[4:]
@@ -52,6 +60,7 @@ for audio_file in audio_files:
     logger.info("Transcribing %s", audio_file)
     for language in languages:
         for temperature in temperatures:
+            logger.info("Setting temperature to %f", temperature)
             kwargs = {"temperature": temperature}
             if language:
                 kwargs["language"] = language
