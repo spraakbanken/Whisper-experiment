@@ -28,9 +28,9 @@ model_parameters = {
         "device" : device,
 }
 if device == "cuda":
-    model_parameters["compute_type"] = "float32"
-else:
     model_parameters["compute_type"] = "float16"
+else:
+    model_parameters["compute_type"] = "float32"
 
 logger.info("Loading model")
 if model_name == "stable_ts":
