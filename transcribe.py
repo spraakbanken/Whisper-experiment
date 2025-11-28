@@ -38,12 +38,12 @@ if model_name == "stable_ts":
         model_size,
         **model_parameters
     )
-elif model_name == "open_ai":
+elif model_name == "openai":
     model = WhisperModel(
         model_size,
         **model_parameters
     )
-elif model_name == "kb_whisper"
+elif model_name == "kb-whisper":
     model = WhisperModel(
         "KBLab/kb-whisper-" + model_size,
         **model_parameters
