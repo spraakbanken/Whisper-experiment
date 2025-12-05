@@ -7,49 +7,90 @@ from nltk.tokenize import RegexpTokenizer
 from nltk.translate.bleu_score import sentence_bleu, SmoothingFunction
 from nltk.translate.gleu_score import sentence_gleu
 import werpy
+import pprint
+import csv
 
 tokenizer = RegexpTokenizer(r'\w+')
 
 chencherry = SmoothingFunction()
 
-if len(sys.argv) > 2:
-  gold_path = sys.argv[1]
-  transcription_path = sys.argv[2]
-else:
-  print(f"Usage: %s gold_path transcription_path" % sys.argv[0])
-  exit(0)
-gold_files = glob.glob(gold_path + "/*.txt")
-gold_files.sort()
-transcription_files = glob.glob(transcription_path + "/*.txt")
-transcription_files.sort()
-transcriptions = {}
-for g in gold_files:
-    (gpath, gfilename) = os.path.split(g)
-    (gname, _) = os.path.splitext(gfilename)
-    transcriptions[gname]={}
-    transcriptions[gname]["gold"] = tokenizer.tokenize(open(g).read().lower())
-for t in transcription_files:
-    (tpath, tfilename) = os.path.split(t)
-    (tname, _) = os.path.splitext(tfilename)
-    result = re.match("([\\w-]+?)_.+", tname)
-    if result is not None:
-      transcriptions[result[1]][tname] = tokenizer.tokenize(open(t).read().lower())
-texts = list(transcriptions.keys())
-texts.sort()
-print("Version\tTranscription\tGold\tBLEU\tGLEU\tWER")
-for text in texts:
-    gold = " ".join(transcriptions[text]["gold"])
-    versions = list(transcriptions[text].keys())
-    versions.remove("gold")
-    for v in versions:
-      transcription = " ".join(transcriptions[text][v])
-      bleu = sentence_bleu([transcriptions[text]["gold"]],transcriptions[text][v],smoothing_function=chencherry.method1)
-      gleu = sentence_gleu([transcriptions[text]["gold"]],transcriptions[text][v])
-      wer = werpy.wer(gold, transcription)
-      if wer is not None:
-        print(f"%s\t\"%s\"\t\"%s\"\t%f\t%f\t%f" % (v, transcription, gold, bleu, gleu, wer))
-      else:
-        sys.stderr.write(f"WER failed for GOLD \"%s\" and TRANSCRIPTION \"%s\"" % (gold, transcription))
-#        print(f"%s\t\"%s\"\t\"%s\"\t%f\t%f\t%f" % (v, transcription, gold, bleu, gleu, -1))
-#      else:
+gold_data = dict()
+data = []
+if __name__=="__main__":
+  if len(sys.argv) > 2:
+    gold_file = sys.argv[1]
+    transcription_files = sys.argv[2:]
+  else:
+    print(f"Usage: %s gold_csv transcription_csv" % sys.argv[0])
+    exit(0)
+
+  participant_pattern = re.compile("([FM]-)?([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})")
+  model_pattern = re.compile("results_([\\w-]+)_(\\w+)")
+  with open(gold_file, newline='') as csvfile:
+    gold_reader = csv.DictReader(csvfile)
+    for gold_dataset in gold_reader:
+      participant = participant_pattern.match(gold_dataset['filename']).group(2)
+      gold_data[participant]=dict()
+      gold_data[participant]['gold_file']=gold_dataset['filename']
+      gold_data[participant]['gold_text']=gold_dataset['text']
+  for transcription_file in transcription_files:
+    with open(transcription_file, newline='') as csvfile:
+      transcription_reader = csv.DictReader(csvfile)
+      if 'model_name' not in transcription_reader.fieldnames:
+
+        model_name, model_size = model_pattern.match(os.path.basename(transcription_file)).groups()
+      for transcription_dataset in transcription_reader:
+        participant = participant_pattern.match(os.path.basename(transcription_dataset['audio_file'])).group(2)
+        if 'model_name' in transcription_dataset:
+          model_name = transcription_dataset['model_name']
+          model_size = transcription_dataset['model_size']
+        gold_text = werpy.normalize(gold_data[participant]['gold_text'])
+        transcription_text = werpy.normalize(transcription_dataset['text'])
+        data.append({
+          'participant': participant,
+          'gold_file': gold_data[participant]['gold_file'], 'gold_text': gold_data[participant]['gold_text'], 'gold_text_normalized': gold_text,
+          'audio_file': transcription_dataset['audio_file'],
+          'model_name': model_name, 'model_size': model_size, 'temperature': transcription_dataset['temperature'],
+          'language': transcription_dataset['language'],
+          'transcription_start_time': transcription_dataset['start'] ,'transcription_end_time': transcription_dataset['end'], 'transcription_duration': transcription_dataset['duration'],
+          'transcription_text': transcription_dataset['text'], 'transcription_segments': transcription_dataset['segments'], 'transcription_text_normalized': transcription_text,
+          'bleu_score': sentence_bleu([gold_text], transcription_text, smoothing_function=chencherry.method1),
+          'gleu_score': sentence_gleu([gold_text], transcription_text),
+          'word_error_rate': werpy.wer(gold_text, transcription_text)
+        })
+  pprint.pp(data)
+# gold_files = glob.glob(gold_path + "/*.txt")
+# gold_files.sort()
+# transcription_files = glob.glob(transcription_path + "/*.txt")
+# transcription_files.sort()
+# transcriptions = {}
+# for g in gold_files:
+#     (gpath, gfilename) = os.path.split(g)
+#     (gname, _) = os.path.splitext(gfilename)
+#     transcriptions[gname]={}
+#     transcriptions[gname]["gold"] = tokenizer.tokenize(open(g).read().lower())
+# for t in transcription_files:
+#     (tpath, tfilename) = os.path.split(t)
+#     (tname, _) = os.path.splitext(tfilename)
+#     result = re.match("([\\w-]+?)_.+", tname)
+#     if result is not None:
+#       transcriptions[result[1]][tname] = tokenizer.tokenize(open(t).read().lower())
+# texts = list(transcriptions.keys())
+# texts.sort()
+# print("Version\tTranscription\tGold\tBLEU\tGLEU\tWER")
+# for text in texts:
+#     gold = " ".join(transcriptions[text]["gold"])
+#     versions = list(transcriptions[text].keys())
+#     versions.remove("gold")
+#     for v in versions:
+#       transcription = " ".join(transcriptions[text][v])
+#       bleu = 
+#       gleu = 
+#       wer = 
+#       if wer is not None:
+#         print(f"%s\t\"%s\"\t\"%s\"\t%f\t%f\t%f" % (v, transcription, gold, bleu, gleu, wer))
+#       else:
+#         sys.stderr.write(f"WER failed for GOLD \"%s\" and TRANSCRIPTION \"%s\"" % (gold, transcription))
+# #        print(f"%s\t\"%s\"\t\"%s\"\t%f\t%f\t%f" % (v, transcription, gold, bleu, gleu, -1))
+# #      else:
       
