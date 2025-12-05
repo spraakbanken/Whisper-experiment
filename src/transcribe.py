@@ -85,14 +85,6 @@ def save_csv(filename: str, all_results: list[dict]) -> None:
         writer.writerow(all_results[0].keys())
         writer.writerows([r.values() for r in all_results])
 
-def run_test():
-    audio_files = ['../../demo/F-6W42-V2GN-MXNM-audio2-kakburk.wav']
-    for model_name in ["stable_ts", "openai", "kb-whisper"]:
-        for model_size in ["small", "large"]:
-            output_file = 'results_' + model_name + '_' + model_size +'.csv'
-            logger.info("Parameters model name: %s, model size: %s", model_name, model_size)
-            all_results = transcribe(model_name, model_size, "cpu", audio_files)
-            save_csv(output_file, all_results)
 if __name__ == "__main__":
     if len(sys.argv) < 5:
         logger.error("Missing command line parameters, expected at least 4, got %d: %s", len(sys.argv)-1, sys.argv[1:])
