@@ -74,7 +74,7 @@ def transcribe(model_name : str, model_size: str, device : str, audio_files: lis
                         final_language = "auto:" + info.language
                     text = ' '.join([segment.text for segment in segments])
                     logger.info("Took %ds to transcribe", end-start)
-                all_results.append({'audio_file': Path(audio_file).stem, 'temperature': temperature, 'language': final_language, 'start': round(start,2), 'end': round(end,2), 'duration': round(end-start,2), 'text': text, 'segments': [{'start': round(float(s.start),2), 'end': round(float(s.end),2), 'text': s.text} for s in segments]})
+                all_results.append({'audio_file': Path(audio_file).stem, 'model_name': model_name, 'model_size': model_size, 'temperature': temperature, 'language': final_language, 'start': round(start,2), 'end': round(end,2), 'duration': round(end-start,2), 'text': text, 'segments': [{'start': round(float(s.start),2), 'end': round(float(s.end),2), 'text': s.text} for s in segments]})
     # Detroy model?
     del model
     return all_results
