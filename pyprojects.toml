@@ -1,0 +1,13 @@
+[project]
+name = "whisper-batch-transcription"
+version = "0.1.0"
+description = "Transcribes a bunch of audio files using a whisper model and stores the results as a CSV file"
+readme = "README.md"
+license = "MIT"
+authors = [
+     { name = "Herb Lange", email = "herbert.lange@svenska.gu.se" }
+]
+dependencies = [
+  "stable_ts==2.19.1",
+  "faster-whisper==1.2.1"
+]
