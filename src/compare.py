@@ -46,6 +46,12 @@ if __name__=="__main__":
           model_size = transcription_dataset['model_size']
         gold_text = werpy.normalize(gold_data[participant]['gold_text'])
         transcription_text = werpy.normalize(transcription_dataset['text'])
+        gold_set=set(gold_text.split())
+        transcription_set=set(transcription_text.split())
+        tp = len(transcription_set.intersection(gold_set))
+        tn = 0 # TODO ?
+        fp = len(transcription_set.difference(gold_set))
+        fn = len(gold_set.difference(transcription_set))
         data.append({
           'participant': participant,
           'gold_file': gold_data[participant]['gold_file'], 'gold_text': gold_data[participant]['gold_text'], 'gold_text_normalized': gold_text,
@@ -56,7 +62,11 @@ if __name__=="__main__":
           'transcription_text': transcription_dataset['text'], 'transcription_segments': transcription_dataset['segments'], 'transcription_text_normalized': transcription_text,
           'bleu_score': sentence_bleu([gold_text], transcription_text, smoothing_function=chencherry.method1),
           'gleu_score': sentence_gleu([gold_text], transcription_text),
-          'word_error_rate': werpy.wer(gold_text, transcription_text)
+          'word_error_rate': werpy.wer(gold_text, transcription_text),
+          'precision': tp/(tp+fp),
+          'recall': tp/(tp+fn),
+          'accuracy': (tp+tn)/(tp+tn+fp+fn),
+          'f1':(2*tp)/(2*tp+fp+fn)
         })
   pprint.pp(data)
 # gold_files = glob.glob(gold_path + "/*.txt")
