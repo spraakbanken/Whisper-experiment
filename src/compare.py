@@ -83,8 +83,6 @@ if __name__=="__main__":
     writer.writerow(data[0].keys())
     writer.writerows([d.values() for d in data])
   # gold_files = glob.glob(gold_path + "/*.txt")
-  pprint.pp(data)
-# gold_files = glob.glob(gold_path + "/*.txt")
 # gold_files.sort()
 # transcription_files = glob.glob(transcription_path + "/*.txt")
 # transcription_files.sort()
