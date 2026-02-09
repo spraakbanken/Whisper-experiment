@@ -21,11 +21,12 @@ logging.basicConfig(level=logging.INFO)
 gold_data = dict()
 data = []
 if __name__=="__main__":
-  if len(sys.argv) > 2:
-    gold_file = sys.argv[1]
-    transcription_files = sys.argv[2:]
+  if len(sys.argv) > 3:
+    output_file = sys.argv[1]
+    gold_file = sys.argv[2]
+    transcription_files = sys.argv[3:]
   else:
-    print(f"Usage: %s gold_csv transcription_csv" % sys.argv[0])
+    print(f"Usage: %s output_csv gold_csv transcription_csv" % sys.argv[0])
     exit(0)
 
   participant_pattern = re.compile("([FM]-)?([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})")
@@ -74,6 +75,13 @@ if __name__=="__main__":
           'accuracy': (tp+tn)/(tp+tn+fp+fn),
           'f1':(2*tp)/(2*tp+fp+fn)
         })
+
+  with open(output_file, 'w', newline='') as f:
+    logger.info("Write analysis to %s", output_file)
+    writer = csv.writer(f)
+    writer.writerow(data[0].keys())
+    writer.writerows([d.values() for d in data])
+  # gold_files = glob.glob(gold_path + "/*.txt")
   pprint.pp(data)
 # gold_files = glob.glob(gold_path + "/*.txt")
 # gold_files.sort()
