@@ -9,10 +9,14 @@ from nltk.translate.gleu_score import sentence_gleu
 import werpy
 import pprint
 import csv
+import logging
 
 tokenizer = RegexpTokenizer(r'\w+')
 
 chencherry = SmoothingFunction()
+
+logger = logging.getLogger(__name__)
+logging.basicConfig(level=logging.INFO)
 
 gold_data = dict()
 data = []
@@ -27,6 +31,7 @@ if __name__=="__main__":
   participant_pattern = re.compile("([FM]-)?([A-Z0-9]{4}-[A-Z0-9]{4}-[A-Z0-9]{4})")
   model_pattern = re.compile("results_([\\w-]+)_(\\w+)")
   with open(gold_file, newline='') as csvfile:
+    logger.info("Reading gold data from %s", gold_file)
     gold_reader = csv.DictReader(csvfile)
     for gold_dataset in gold_reader:
       participant = participant_pattern.match(gold_dataset['filename']).group(2)
@@ -35,6 +40,7 @@ if __name__=="__main__":
       gold_data[participant]['gold_text']=gold_dataset['text']
   for transcription_file in transcription_files:
     with open(transcription_file, newline='') as csvfile:
+      logger.info("Reading transcription from %s", transcription_file)
       transcription_reader = csv.DictReader(csvfile)
       if 'model_name' not in transcription_reader.fieldnames:
 
