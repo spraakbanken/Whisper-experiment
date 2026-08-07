@@ -14,9 +14,15 @@ logging.basicConfig(level=logging.INFO)
 def transcribe(model_name : str, model_size: str, device : str, audio_files: list[str]):
     # Fixed parameters
     condition_on_previous = True
-    languages = ['sv', '']
-    #temperatures = [0,0.25,0.5,0.75,1]
-    temperatures = [0]
+    #languages = ['sv']
+    languages = ['sv']
+    temperatures = [0,0.25,0.5,0.75,1]
+    # temperatures = [0.5]
+    prompt = ""
+    # First attempt prompting trip to stockholm
+#    prompt = "a aa ah aha ahja aja betal billigaste blidde booking brukade brukskar com dar denne ditut dom dä däruppe därute e ee eee eeee eh eja emilie er erbjuda erbjudan fjorton fotbollsförbundet framför fruängen gjord haha hahaha hihi hänger hållspänner höll ihåg inkvarteringen iordning jaa jae jobbade ka kalendarium kapong karlbergsvägen kriminaler kulturellt la lede liggandes liksom litegrann lugn lättaste lå låg långt lösa m medans meddelat menar metron mm mobil mtrx ne neccessär neccessären nuförtiden nutid ny nyöppnade nä nänä närmar näö nåra nåt o oh ok orkester pokemon pokemonfigurer punkt rosaexpress rundar runtom runtomkring ryggen sade senvåren sextiotre sidan sjöstan sliper so sofiahemmet soppor stadsdelarna stället sådan såpass tidn tillfällena transportsätt trosor tu veta vintersakerna väldig västtrafik väx yr äldste äro åk åkaruntbuss åu öe"
+    # Second attempt prompting
+    #prompt = "Glossary: a, aa, agoda, ah, aha, ahja, aja, alls, allt, alltså, att, avresedatum, bara, behöver, behövs, bestämma, betal, biljett, biljetter, billig, billigaste, blev, blidde, boendet, booking, bor, borta, brevlåda, brukade, brukskar, com, dar, dator, de, dem, den, denne, ditut, dom, du, dä, där, därför, däruppe, därute, då, e, ee, eee, eeee, eh, eja, emilie, er, erbjuda, erbjudan, ett, faktiskt, fixar, fjorton, fotbollsmatchen, framför, frun, fruängen, funderar, få, förbereda, förbereder, givetvis, gjord, grand, grannar, granne, grejer, gången, göra, göteborgsposten, ha, haha, hahaha, hand, heter, hihi, hittar, hotell, hur, husdjur, huset, här, hållspänner, höll, ihop, ihåg, internet, iordning, iväg, ja, jaa, jae, jo, jobbade, ju, ka, kalendarium, kanske, kapong, karlbergsvägen, klara, klart, kolla, kommit, kriminaler, kulturellt, kunde, la, lagt, lakan, lede, liksom, lite, litegrann, lugn, längesen, lättaste, lå, låg, långt, lösa, m, man, meddelat, men, menar, mera, metron, mina, mm, mobil, mtrx, många, möjligtvis, ne, neccessär, neccessären, nej, nja, nuförtiden, nutid, ny, nä, nähä, nänä, när, nära, närmar, nätter, näö, någon, någonstans, något, några, nåra, nåt, o, oh, ok, okej, om, ombyten, orkester, packa, packar, packarlista, pokemon, pokemonfigurer, post, punkt, retur, rosaexpress, rundar, runt, runtom, runtomkring, ryggen, sa, sade, schampo, se, sedan, senvåren, ser, sevärdheter, sextiotre, sidan, sjöstan, skall, sköta, sliper, so, sockar, sofiahemmet, soppor, staden, stadsdelarna, stockholms, stup, stället, säga, sådan, sådana, sådant, såpass, ta, tar, telefon, tidn, tidning, tillbaks, tillfällena, titta, transportsätt, tror, trosor, tröja, tu, tur, tycker, tänker, upp, utan, utav, va, valdemarsudde, vasa, vattna, vattnar, vet, veta, vid, vilja, vilken, vill, vintersakerna, väl, väldig, vänner, västtrafik, väx, yr, är, äro, åk, åkaruntbuss, årstid, åt, åu, öe"
     model_parameters = {
         "device" : device,
     }
@@ -52,6 +58,8 @@ def transcribe(model_name : str, model_size: str, device : str, audio_files: lis
             for temperature in temperatures:
                 logger.info("Setting temperature to %f", temperature)
                 kwargs = {"temperature": temperature}
+                if prompt:
+                    kwargs["initial_prompt"]=prompt
                 if language:
                     kwargs["language"] = language
                     final_language = language
